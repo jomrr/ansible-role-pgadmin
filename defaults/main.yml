@@ -1,0 +1,94 @@
+---
+# role: pgadmin
+# file: defaults/main.yml
+
+# Select existing native repositories or the official pgAdmin repository.
+# Choices: native (distribution), official (pgAdmin repository).
+pgadmin_package_source: native
+
+# Settings database URI; empty uses SQLite with pgAdmin's SQLITE_PATH setting.
+pgadmin_config_database_uri: ''
+# pgadmin_config_database_uri: 'postgresql://pgadmin@db.example.org:5432/pgadmin?passfile=/etc/pgadmin/pgpass'
+
+# Security baseline; pgadmin_config overrides individual settings after this mapping.
+# HTTPS is required; public hostnames and the runtime file group must be configured.
+# Boolean settings accept true or false; list choices apply to each element.
+pgadmin_config_defaults:
+  ALLOWED_HOSTS:
+    - localhost
+    - 127.0.0.1
+  PROXY_X_FOR_COUNT: 0
+  PROXY_X_PROTO_COUNT: 0
+  PROXY_X_HOST_COUNT: 0
+  PROXY_X_PORT_COUNT: 0
+  PROXY_X_PREFIX_COUNT: 0
+  SESSION_COOKIE_SECURE: true
+  SESSION_COOKIE_HTTPONLY: true
+  # Choices: Lax, Strict, 'None' (send cross-site), null (omit the attribute).
+  SESSION_COOKIE_SAMESITE: Lax
+  SESSION_COOKIE_DOMAIN: null
+  COOKIE_DEFAULT_DOMAIN: null
+  COOKIE_DEFAULT_PATH: /
+  ENHANCED_COOKIE_PROTECTION: true
+  STRICT_TRANSPORT_SECURITY_ENABLED: true
+  STRICT_TRANSPORT_SECURITY: max-age=31536000
+  # Choices: SAMEORIGIN, 'ALLOW-FROM origin' (legacy), '' (disabled); DENY is unsupported.
+  X_FRAME_OPTIONS: SAMEORIGIN
+  X_CONTENT_TYPE_OPTIONS: nosniff
+  X_XSS_PROTECTION: '0'
+  # Choices: same-origin, same-origin-allow-popups, noopener-allow-popups, unsafe-none.
+  CROSS_ORIGIN_OPENER_POLICY: same-origin
+  # Choices: internal, ldap, kerberos, oauth2, webserver; evaluated in list order.
+  AUTHENTICATION_SOURCES:
+    - internal
+  SECURITY_PASSWORD_HASH: pbkdf2_sha512
+  PASSWORD_LENGTH_MIN: 14
+  MAX_LOGIN_ATTEMPTS: 3
+  SESSION_EXPIRATION_TIME: 1
+  USER_INACTIVITY_TIMEOUT: 3600
+  OVERRIDE_USER_INACTIVITY_TIMEOUT: true
+  MFA_ENABLED: true
+  # Choices: authenticator, email (requires mail server settings).
+  MFA_SUPPORTED_METHODS:
+    - authenticator
+  MFA_FORCE_REGISTRATION: false
+  ALLOW_SAVE_PASSWORD: false
+  SUPPORT_SSH_TUNNEL: false
+  ALLOW_SAVE_TUNNEL_PASSWORD: false
+  ENABLE_PSQL: false
+  ENABLE_BINARY_PATH_BROWSING: false
+  ENABLE_SERVER_PASS_EXEC_CMD: false
+  SHARED_STORAGE: []
+  AUTO_DISCOVER_SERVERS: false
+  SHOW_GRAVATAR_IMAGE: false
+  UPGRADE_CHECK_ENABLED: false
+  LLM_ENABLED: false
+  DEBUG: false
+  # Choices: 0 (NOTSET), 10 (DEBUG), 20 (INFO), 25 (SQL), 30 (WARNING), 40 (ERROR), 50 (CRITICAL).
+  CONSOLE_LOG_LEVEL: 30
+  # Choices: 0 (NOTSET), 10 (DEBUG), 20 (INFO), 25 (SQL), 30 (WARNING), 40 (ERROR), 50 (CRITICAL).
+  FILE_LOG_LEVEL: 30
+  LOG_ROTATION_SIZE: 10
+  LOG_ROTATION_AGE: 1440
+  LOG_ROTATION_MAX_LOG_FILES: 30
+
+# Site settings merged over the baseline; server mode and the database URI are managed separately.
+pgadmin_config: {}
+# pgadmin_config:
+#   ALLOWED_HOSTS:
+#     - pgadmin.example.org
+#   CONSOLE_LOG_LEVEL: 20
+#   DEFAULT_BINARY_PATHS:
+#     pg: /usr/bin
+
+# Existing application runtime group allowed to read the system configuration file.
+# Required; the group must be provided by the separately managed runtime.
+# pgadmin_config_group: apache
+# pgadmin_config_group: pgadmin
+
+# Restrict configuration reads to root and the configured application runtime group.
+pgadmin_config_mode: '0640'
+
+# Hide template output and diffs; disable only for entirely non-secret settings.
+# Choices: true, false.
+pgadmin_no_log: true

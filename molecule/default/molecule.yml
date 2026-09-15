@@ -1,0 +1,78 @@
+---
+# role: pgadmin
+# file: molecule/default/molecule.yml
+
+dependency:
+  name: "galaxy"
+  options:
+    role-file: "${MOLECULE_PROJECT_DIRECTORY}/collections.yml"
+    requirements-file: "${MOLECULE_PROJECT_DIRECTORY}/collections.yml"
+driver:
+  name: "podman"
+provisioner:
+  name: "ansible"
+  config_options:
+    defaults:
+      forks: 8
+      interpreter_python: "auto_silent"
+      allow_world_readable_tmpfiles: true
+      callbacks_enabled: "ansible.posix.profile_tasks,ansible.posix.timer"
+      callback_result_format: "yaml"
+      remote_tmp: "/tmp/.ansible/tmp"
+    ssh_connection:
+      pipelining: true
+  log: true
+  playbooks:
+    converge: "../resources/playbooks/converge.yml"
+    verify: "../resources/playbooks/verify.yml"
+    prepare: "../resources/playbooks/prepare.yml"
+    side_effect: "../resources/playbooks/side_effect.yml"
+  inventory:
+    group_vars:
+      all:
+        pgadmin_config_group: "root"
+        pgadmin_package_source: |-
+          {{ lookup('ansible.builtin.env', 'PGADMIN_PACKAGE_SOURCE',
+             default={'Fedora': 'native'}.get(ansible_facts.distribution, 'official')) }}
+        __pgadmin_test_backend: "sqlite"
+        __pgadmin_test_paths:
+          native:
+            application: "native"
+            python: "/usr/bin/python3"
+          official:
+            application: "/usr/pgadmin4/web"
+            python: "/usr/pgadmin4/venv/bin/python3"
+        pgadmin_config:
+          SERVER_MODE: false
+          SQLITE_PATH: "/var/lib/pgadmin/molecule-settings.db"
+          CONSOLE_LOG_LEVEL: 20
+          LOGIN_BANNER: "Managed 'pgAdmin' — true, false, null\\n"
+          DEFAULT_BINARY_PATHS:
+            pg: "/usr/bin"
+          FIXED_BINARY_PATHS:
+            pg: null
+verifier:
+  name: "ansible"
+scenario:
+  test_sequence:
+    - "dependency"
+    - "destroy"
+    - "syntax"
+    - "create"
+    - "prepare"
+    - "converge"
+    - "idempotence"
+    - "check"
+    - "verify"
+    - "side_effect"
+    - "converge"
+    - "idempotence"
+    - "verify"
+    - "destroy"
+  name: "default"
+platforms:
+  - name: "pgadmin"
+    image: "docker.io/${uns:-jomrr}/molecule-${img:-fedora}:${tag:-latest}"
+    pre_build_image: true
+    override_command: false
+    systemd: "true"

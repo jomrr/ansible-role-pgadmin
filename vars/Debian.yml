@@ -1,0 +1,10 @@
+---
+# role: pgadmin
+# file: vars/Debian.yml
+
+__pgadmin_packages:
+  native:
+    - pgadmin4-server
+  official:
+    - pgadmin4-server
+__pgadmin_validate: /usr/bin/python3 -m py_compile %s

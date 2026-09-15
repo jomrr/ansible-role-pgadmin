@@ -1,0 +1,26 @@
+---
+# role: pgadmin
+# file: tasks/configure.yml
+
+- name: PGADMIN | Create the system configuration directory
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    path: /etc/pgadmin
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: PGADMIN | Install system-wide settings
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: config_system.py.j2
+    dest: /etc/pgadmin/config_system.py
+    owner: root
+    group: "{{ pgadmin_config_group }}"
+    mode: "{{ pgadmin_config_mode }}"
+    validate: "{{ __pgadmin_validate }}"
+  no_log: "{{ pgadmin_no_log }}"
+  diff: "{{ not pgadmin_no_log }}"

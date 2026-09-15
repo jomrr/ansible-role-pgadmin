@@ -1,0 +1,26 @@
+---
+# role: pgadmin
+# file: tasks/repository-RedHat.yml
+
+- name: PGADMIN | Import the official RPM signing key
+  become: true
+  become_user: root
+  ansible.builtin.rpm_key:
+    key: https://www.pgadmin.org/static/packages_pgadmin_org.pub
+    fingerprint: E8697E2EEF76C02D3A6332778881B2A8210976F2
+    state: present
+
+- name: PGADMIN | Configure the official Yum repository
+  become: true
+  become_user: root
+  ansible.builtin.yum_repository:
+    name: pgAdmin4
+    description: pgAdmin 4 official repository
+    file: pgadmin4
+    # Resolve these DNF variables on the host, including during system upgrades.
+    baseurl: "https://ftp.postgresql.org/pub/pgadmin/pgadmin4/yum/{{ __pgadmin_yum_path }}-$releasever-$basearch"
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: true
+    gpgkey: https://www.pgadmin.org/static/packages_pgadmin_org.pub
+    state: present

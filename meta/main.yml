@@ -1,0 +1,16 @@
+---
+# role: pgadmin
+# file: meta/main.yml
+
+galaxy_info:
+  author: Jonas Mauer
+  description: Install pgAdmin 4 application packages and manage system-wide settings for web deployment.
+  galaxy_tags:
+    - postgresql
+    - pgadmin
+    - database
+  issue_tracker_url: https://github.com/jomrr/ansible-role-pgadmin/issues
+  license: MIT
+  min_ansible_version: "2.20"
+  namespace: jomrr
+  role_name: pgadmin

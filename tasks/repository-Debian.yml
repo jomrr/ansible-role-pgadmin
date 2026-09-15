@@ -1,0 +1,32 @@
+---
+# role: pgadmin
+# file: tasks/repository-Debian.yml
+
+- name: PGADMIN | Install APT repository support
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: PGADMIN | Configure the official APT repository
+  become: true
+  become_user: root
+  ansible.builtin.deb822_repository:
+    name: pgadmin4
+    types:
+      - deb
+    uris: "https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/{{ ansible_facts.distribution_release }}"
+    suites:
+      - pgadmin4
+    components:
+      - main
+    signed_by: https://www.pgadmin.org/static/packages_pgadmin_org.pub
+    state: present
+    mode: '0644'
+  notify: refresh apt cache
+
+- name: PGADMIN | Make the repository available before package installation
+  ansible.builtin.meta: flush_handlers

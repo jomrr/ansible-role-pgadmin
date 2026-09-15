@@ -1,0 +1,84 @@
+---
+# role: pgadmin
+# file: molecule/resources/playbooks/prepare.yml
+
+- name: PGADMIN | Prepare settings database fixtures
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: PGADMIN | Load database fixture platform settings
+      ansible.builtin.include_vars: "{{ lookup('ansible.builtin.first_found', __pgadmin_test_platform_files) }}"
+      vars:
+        __pgadmin_test_platform_files:
+          files:
+            - "{{ ansible_facts.os_family }}.yml"
+          paths:
+            - "{{ playbook_dir }}/../vars"
+
+    - name: PGADMIN | Install database fixture packages
+      become: true
+      become_user: root
+      ansible.builtin.package:
+        name: "{{ __pgadmin_test_packages }}"
+        state: present
+        update_cache: true
+
+    - name: PGADMIN | Initialize the RedHat database fixture
+      become: true
+      become_user: root
+      ansible.builtin.command:
+        cmd: "{{ __pgadmin_test_initialize }}"
+        creates: "{{ __pgadmin_test_version_file }}"
+      when: ansible_facts.os_family == 'RedHat'
+
+    - name: PGADMIN | Configure password authentication for the RedHat fixture
+      become: true
+      become_user: root
+      community.postgresql.postgresql_pg_hba:
+        dest: "{{ __pgadmin_test_hba }}"
+        contype: host
+        databases: all
+        users: all
+        address: 127.0.0.1/32
+        method: scram-sha-256
+      when: ansible_facts.os_family == 'RedHat'
+      notify: reload database fixture
+
+    - name: PGADMIN | Start the PostgreSQL fixture
+      become: true
+      become_user: root
+      ansible.builtin.systemd_service:
+        name: postgresql
+        state: started
+
+    - name: PGADMIN | Create the fixture login
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        name: pgadmin
+        password: molecule_pgadmin_password
+
+    - name: PGADMIN | Create the settings database fixture
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: pgadmin
+        owner: pgadmin
+
+    - name: PGADMIN | Create the SQLite fixture directory
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: /var/lib/pgadmin
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+  handlers:
+    - name: PGADMIN | Reload the PostgreSQL fixture
+      become: true
+      become_user: root
+      ansible.builtin.systemd_service:
+        name: postgresql
+        state: reloaded
+      listen: reload database fixture

@@ -1,0 +1,8 @@
+# Managed by ansible.
+# file: {{ template_destpath }}
+
+{% for __pgadmin_key, __pgadmin_value in pgadmin_config_defaults
+    | combine(pgadmin_config)
+    | combine({'SERVER_MODE': true, 'CONFIG_DATABASE_URI': pgadmin_config_database_uri}) | dictsort %}
+{{ __pgadmin_key }} = {{ __pgadmin_value | pprint }}
+{% endfor %}

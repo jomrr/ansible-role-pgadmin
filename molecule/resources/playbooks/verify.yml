@@ -1,0 +1,48 @@
+---
+# role: pgadmin
+# file: molecule/resources/playbooks/verify.yml
+
+- name: PGADMIN | Verify application installation and system settings
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: PGADMIN | Verify effective application settings
+      become: true
+      become_user: root
+      ansible.builtin.script:
+        cmd: >-
+          ../scripts/verify_config.py {{ __pgadmin_test_paths[pgadmin_package_source].application }}
+          {{ __pgadmin_test_backend }} {{ pgadmin_package_source }} {{ ansible_facts.os_family }}
+        executable: "{{ __pgadmin_test_paths[pgadmin_package_source].python }}"
+      changed_when: false
+
+    - name: PGADMIN | Inspect system configuration permissions
+      ansible.builtin.stat:
+        path: /etc/pgadmin/config_system.py
+      register: __pgadmin_test_config
+
+    - name: PGADMIN | Verify system configuration permissions
+      ansible.builtin.assert:
+        that:
+          - __pgadmin_test_config.stat.pw_name == 'root'
+          - __pgadmin_test_config.stat.gr_name == 'root'
+          - __pgadmin_test_config.stat.mode == '0640'
+
+    - name: PGADMIN | Inspect Apache integration files
+      ansible.builtin.stat:
+        path: "{{ __pgadmin_test_path }}"
+      loop:
+        - /etc/httpd/conf.d/pgadmin4.conf
+        - /etc/apache2/conf-available/pgadmin4.conf
+      loop_control:
+        loop_var: __pgadmin_test_path
+      register: __pgadmin_test_apache
+
+    - name: PGADMIN | Verify Apache integration was not installed
+      ansible.builtin.assert:
+        that:
+          - not __pgadmin_test_result.stat.exists
+      loop: "{{ __pgadmin_test_apache.results }}"
+      loop_control:
+        loop_var: __pgadmin_test_result
+        label: "{{ __pgadmin_test_result.__pgadmin_test_path }}"

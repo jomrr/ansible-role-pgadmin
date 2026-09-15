@@ -1,0 +1,19 @@
+---
+# role: pgadmin
+# file: molecule/resources/playbooks/side_effect.yml
+
+- name: PGADMIN | Exercise PostgreSQL settings storage
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: PGADMIN | Select the PostgreSQL settings database
+      ansible.builtin.include_role:
+        name: "{{ lookup('ansible.builtin.env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+      vars:
+        pgadmin_config_database_uri: >-
+          postgresql://pgadmin:molecule_pgadmin_password@127.0.0.1:5432/pgadmin?application_name=pgadmin-molecule
+
+- name: PGADMIN | Verify the PostgreSQL backend
+  ansible.builtin.import_playbook: verify.yml
+  vars:
+    __pgadmin_test_backend: postgresql

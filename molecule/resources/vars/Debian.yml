@@ -1,0 +1,8 @@
+---
+# role: pgadmin
+# file: molecule/resources/vars/Debian.yml
+
+__pgadmin_test_packages:
+  - acl
+  - postgresql
+  - python3-psycopg2

@@ -1,0 +1,123 @@
+---
+# role: pgadmin
+# file: meta/argument_specs.yml
+
+argument_specs:
+  main:
+    short_description: Install pgAdmin 4 application packages and manage system-wide settings
+      for web deployment.
+    options:
+      pgadmin_package_source:
+        type: str
+        default: native
+        choices:
+          - native
+          - official
+        description:
+          - Use existing native repositories or configure the official pgAdmin project repository.
+          - Native repositories, including any third-party distribution repositories, must
+            be configured separately.
+      pgadmin_config_database_uri:
+        type: str
+        default: ''
+        description:
+          - Connection URI for the pgAdmin settings database; an empty string selects the
+            default SQLite backend.
+          - PostgreSQL accepts postgresql:// or postgresql+psycopg:// URIs, including schema,
+            TLS and passfile query parameters.
+          - Overrides CONFIG_DATABASE_URI in pgadmin_config. Keep pgadmin_no_log enabled
+            when the URI contains credentials.
+          - SQLite and PostgreSQL are the backends currently documented by pgAdmin; other
+            SQLAlchemy dialects are not promised as supported.
+      pgadmin_config_defaults:
+        type: dict
+        default:
+          ALLOWED_HOSTS:
+            - localhost
+            - 127.0.0.1
+          PROXY_X_FOR_COUNT: 0
+          PROXY_X_PROTO_COUNT: 0
+          PROXY_X_HOST_COUNT: 0
+          PROXY_X_PORT_COUNT: 0
+          PROXY_X_PREFIX_COUNT: 0
+          SESSION_COOKIE_SECURE: true
+          SESSION_COOKIE_HTTPONLY: true
+          SESSION_COOKIE_SAMESITE: Lax
+          SESSION_COOKIE_DOMAIN: null
+          COOKIE_DEFAULT_DOMAIN: null
+          COOKIE_DEFAULT_PATH: /
+          ENHANCED_COOKIE_PROTECTION: true
+          STRICT_TRANSPORT_SECURITY_ENABLED: true
+          STRICT_TRANSPORT_SECURITY: max-age=31536000
+          X_FRAME_OPTIONS: SAMEORIGIN
+          X_CONTENT_TYPE_OPTIONS: nosniff
+          X_XSS_PROTECTION: '0'
+          CROSS_ORIGIN_OPENER_POLICY: same-origin
+          AUTHENTICATION_SOURCES:
+            - internal
+          SECURITY_PASSWORD_HASH: pbkdf2_sha512
+          PASSWORD_LENGTH_MIN: 14
+          MAX_LOGIN_ATTEMPTS: 3
+          SESSION_EXPIRATION_TIME: 1
+          USER_INACTIVITY_TIMEOUT: 3600
+          OVERRIDE_USER_INACTIVITY_TIMEOUT: true
+          MFA_ENABLED: true
+          MFA_SUPPORTED_METHODS:
+            - authenticator
+          MFA_FORCE_REGISTRATION: false
+          ALLOW_SAVE_PASSWORD: false
+          SUPPORT_SSH_TUNNEL: false
+          ALLOW_SAVE_TUNNEL_PASSWORD: false
+          ENABLE_PSQL: false
+          ENABLE_BINARY_PATH_BROWSING: false
+          ENABLE_SERVER_PASS_EXEC_CMD: false
+          SHARED_STORAGE: []
+          AUTO_DISCOVER_SERVERS: false
+          SHOW_GRAVATAR_IMAGE: false
+          UPGRADE_CHECK_ENABLED: false
+          LLM_ENABLED: false
+          DEBUG: false
+          CONSOLE_LOG_LEVEL: 30
+          FILE_LOG_LEVEL: 30
+          LOG_ROTATION_SIZE: 10
+          LOG_ROTATION_AGE: 1440
+          LOG_ROTATION_MAX_LOG_FILES: 30
+        description:
+          - Security baseline merged with pgadmin_config; override individual settings through
+            pgadmin_config.
+          - Defaults require HTTPS and permit only localhost and 127.0.0.1 host headers,
+            with X-Forwarded-* trust disabled.
+          - Replacing this entire mapping replaces the baseline; ordinary site configuration
+            should use pgadmin_config.
+      pgadmin_config:
+        type: dict
+        default: {}
+        description:
+          - Site-specific pgAdmin settings merged over pgadmin_config_defaults and written
+            to /etc/pgadmin/config_system.py.
+          - Matching keys replace complete values, including lists and nested dictionaries;
+            unmentioned security defaults remain active.
+          - Use YAML strings, booleans, numbers, null, lists and dictionaries; strings are
+            literal values, not Python expressions.
+          - SERVER_MODE is always true and CONFIG_DATABASE_URI comes from pgadmin_config_database_uri,
+            overriding entries in this dictionary.
+      pgadmin_config_group:
+        type: str
+        required: true
+        description:
+          - Existing group of the separately managed application runtime, used to make the
+            system configuration readable by that runtime.
+          - Required because the role does not select a webserver or create runtime accounts;
+            there is no generally valid default group.
+      pgadmin_config_mode:
+        type: str
+        default: '0640'
+        description:
+          - Permissions for the system configuration file; root and the configured application
+            runtime group can read it by default.
+      pgadmin_no_log:
+        type: bool
+        default: true
+        description:
+          - Suppress configuration task output and diffs by default. Disable only when all
+            settings and the database URI contain no secrets.

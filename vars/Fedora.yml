@@ -1,0 +1,11 @@
+---
+# role: pgadmin
+# file: vars/Fedora.yml
+
+__pgadmin_packages:
+  native:
+    - pgadmin4
+  official:
+    - pgadmin4-server
+__pgadmin_yum_path: fedora/fedora
+__pgadmin_validate: /usr/bin/python3 -m py_compile %s

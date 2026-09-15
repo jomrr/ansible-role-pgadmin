@@ -1,0 +1,10 @@
+---
+# role: pgadmin
+# file: handlers/main.yml
+
+- name: PGADMIN | Refresh APT package metadata
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    update_cache: true
+  listen: refresh apt cache

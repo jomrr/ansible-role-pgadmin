@@ -1,0 +1,11 @@
+---
+# role: pgadmin
+# file: molecule/resources/vars/RedHat.yml
+
+__pgadmin_test_packages:
+  - acl
+  - postgresql-server
+  - python3-psycopg2
+__pgadmin_test_initialize: /usr/bin/postgresql-setup --initdb
+__pgadmin_test_version_file: /var/lib/pgsql/data/PG_VERSION
+__pgadmin_test_hba: /var/lib/pgsql/data/pg_hba.conf
